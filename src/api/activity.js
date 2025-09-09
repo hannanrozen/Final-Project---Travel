@@ -23,7 +23,7 @@ export const getActivities = async () => {
 
 export const getActivityById = async (id) => {
   try {
-    const response = await api.get(`/activities/${id}`);
+    const response = await api.get(`/activity/${id}`);
     return {
       success: true,
       data: response.data,

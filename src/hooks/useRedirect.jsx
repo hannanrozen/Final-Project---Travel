@@ -3,7 +3,7 @@ import { useAuth } from "./useAuth";
 
 export const useRedirect = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { authenticated, user } = useAuth();
 
   const redirectToLogin = () => {
     navigate("/login", { replace: true });
@@ -13,7 +13,7 @@ export const useRedirect = () => {
     if (user?.role === "admin") {
       navigate("/admin/dashboard", { replace: true });
     } else {
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true }); // Changed to home page for regular users
     }
   };
 
@@ -22,7 +22,7 @@ export const useRedirect = () => {
   };
 
   const requireAuth = (callback) => {
-    if (!isAuthenticated) {
+    if (!authenticated) {
       redirectToLogin();
       return false;
     }
@@ -31,7 +31,7 @@ export const useRedirect = () => {
   };
 
   const requireAdmin = (callback) => {
-    if (!isAuthenticated || user?.role !== "admin") {
+    if (!authenticated || user?.role !== "admin") {
       redirectToHome();
       return false;
     }

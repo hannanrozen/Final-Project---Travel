@@ -47,9 +47,8 @@ export const register = async (userData) => {
   try {
     const response = await api.post("/register", userData);
 
-    if (response.data.data) {
-      localStorage.setItem("user", JSON.stringify(response.data.data));
-    }
+    // Don't automatically save user data after registration
+    // Let them login manually for better security
 
     return {
       success: true,
@@ -61,7 +60,7 @@ export const register = async (userData) => {
     const errorMessage =
       e.response?.data?.message ||
       e.response?.data?.error ||
-      "Login failed. Please try again.";
+      "Registration failed. Please try again.";
 
     return {
       success: false,

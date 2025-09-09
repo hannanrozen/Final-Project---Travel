@@ -105,10 +105,13 @@ export const cancelTransaction = async (cancelData) => {
   }
 };
 
-export const updateTransactionProofPayment = async (proofData) => {
+export const updateTransactionProofPayment = async (
+  transactionId,
+  proofData
+) => {
   try {
     const response = await api.post(
-      "/update-transaction-proof-payment",
+      `/update-transaction-proof-payment/${transactionId}`,
       proofData
     );
     return {

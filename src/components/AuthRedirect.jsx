@@ -3,14 +3,14 @@ import { useAuth } from "../hooks/useAuth";
 import { useRedirect } from "../hooks/useRedirect";
 
 const AuthRedirect = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { authenticated, loading } = useAuth();
   const { redirectToHome } = useRedirect();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
+    if (!loading && authenticated) {
       redirectToHome();
     }
-  }, [isAuthenticated, loading, redirectToHome]);
+  }, [authenticated, loading, redirectToHome]);
 
   if (loading) {
     return (
@@ -20,7 +20,7 @@ const AuthRedirect = ({ children }) => {
     );
   }
 
-  if (isAuthenticated) {
+  if (authenticated) {
     return null;
   }
 

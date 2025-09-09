@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, LogIn } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { useRedirect } from "../../hooks/useRedirect";
 import Logo from "../../assets/icons/Logonavbar.svg";
-import authImage from "../../assets/images/auth_image.jpg";
+import authImage from "../../assets/images/authbg.jpg";
+import { commonButtons } from "../../utils/buttonStyles";
 
 const LoginIndex = () => {
   const [formData, setFormData] = useState({
@@ -13,17 +13,35 @@ const LoginIndex = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, loading, error } = useAuth();
-  const { redirectToDashboard } = useRedirect();
+  const { login, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError("");
+    setIsSubmitting(true);
+
     try {
-      await login(formData);
-      redirectToDashboard();
+      const result = await login(formData);
+      if (result.success) {
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          // Redirect based on user role
+          if (result.data.data.role === "admin") {
+            navigate("/admin/dashboard", { replace: true });
+          } else {
+            navigate("/", { replace: true }); // Go to home page for regular users
+          }
+        }, 100);
+      }
     } catch (err) {
       console.error("Login failed:", err);
+      setLoginError(err.message || "Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -78,9 +96,9 @@ const LoginIndex = () => {
               </p>
             </div>
 
-            {error && (
+            {loginError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                {error}
+                {loginError}
               </div>
             )}
 
@@ -158,10 +176,10 @@ const LoginIndex = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting || loading}
+                className={commonButtons.loginButton}
               >
-                {loading ? (
+                {isSubmitting || loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     Signing In...

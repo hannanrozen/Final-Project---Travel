@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -9,12 +9,13 @@ import {
   Phone,
   UserPlus,
   Upload,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { useRedirect } from "../../hooks/useRedirect";
 import { uploadImage } from "../../api/upload";
 import Logo from "../../assets/icons/Logonavbar.svg";
-import authImage from "../../assets/images/auth_image.jpg";
+import authImage from "../../assets/images/authbg.jpg";
+import { commonButtons } from "../../utils/buttonStyles";
 
 const RegisterIndex = () => {
   const [formData, setFormData] = useState({
@@ -32,32 +33,48 @@ const RegisterIndex = () => {
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [registrationError, setRegistrationError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, loading, error } = useAuth();
-  const { redirectToLogin } = useRedirect();
+  const { register, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setRegistrationError("");
 
     if (formData.password !== formData.passwordRepeat) {
-      alert("Passwords do not match");
+      setRegistrationError("Passwords do not match");
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       if (profileImage) {
         setUploadingImage(true);
         const uploadResponse = await uploadImage(profileImage);
         formData.profilePictureUrl = uploadResponse.url;
+        setUploadingImage(false);
       }
 
-      await register(formData);
-      alert("Registration successful! Please login.");
-      redirectToLogin();
+      const result = await register(formData);
+      if (result.success) {
+        alert("Registration successful! Please login with your credentials.");
+        navigate("/login", { replace: true });
+      } else {
+        setRegistrationError(
+          result.error || "Registration failed. Please try again."
+        );
+      }
     } catch (err) {
       console.error("Registration failed:", err);
+      setRegistrationError(
+        err.message || "Registration failed. Please try again."
+      );
     } finally {
       setUploadingImage(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -120,9 +137,9 @@ const RegisterIndex = () => {
               <p className="text-slate-600">Join us and start your adventure</p>
             </div>
 
-            {error && (
+            {registrationError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                {error}
+                {registrationError}
               </div>
             )}
 
@@ -214,6 +231,46 @@ const RegisterIndex = () => {
                 </div>
               </div>
 
+              {/* Role Selection Field */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Account Type
+                </label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                  <select
+                    name="role"
+                    required
+                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors appearance-none bg-white"
+                    value={formData.role}
+                    onChange={handleChange}
+                  >
+                    <option value="user">
+                      User - Browse and book activities
+                    </option>
+                    <option value="admin">Admin - Manage the platform</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  Choose "Admin" only if you need to manage content and users
+                </p>
+              </div>
+
               {/* Password Field */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -302,10 +359,10 @@ const RegisterIndex = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || uploadingImage}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmitting || loading || uploadingImage}
+                className={commonButtons.registerButton}
               >
-                {loading || uploadingImage ? (
+                {isSubmitting || loading || uploadingImage ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                     {uploadingImage
