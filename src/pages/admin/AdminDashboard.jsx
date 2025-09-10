@@ -20,6 +20,7 @@ import { getPromos } from "../../api/promo";
 import { getAllTransactions } from "../../api/transaction";
 import { logout } from "../../api/auth";
 import { useAuth } from "../../hooks/useAuth";
+import Logo from "../../assets/icons/Footernavbar.svg";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -147,17 +148,11 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-cyan-50">
-      {/* Header */}
       <header className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">
-                Travel Admin Dashboard
-              </h1>
-              <span className="ml-3 px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                Admin Panel
-              </span>
+              <img src={Logo} alt="Logo" className="h-8 w-auto" />
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
@@ -166,6 +161,7 @@ const AdminDashboard = () => {
                 </p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
+
               <button
                 onClick={handleLogout}
                 className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors duration-200"
