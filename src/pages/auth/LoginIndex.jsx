@@ -58,7 +58,7 @@ const LoginIndex = () => {
         className="w-1/2 fixed left-0 top-0 h-screen bg-cover bg-center bg-no-repeat hidden lg:flex flex-col justify-between p-8"
         style={{ backgroundImage: `url(${authImage})` }}
       >
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-cyan-100/20"></div>
 
         <div className="relative z-10">
           <Link to="/" className="inline-flex items-center space-x-2">
