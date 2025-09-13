@@ -2,7 +2,7 @@ import api from "../utils/axios.js";
 
 export const addToCart = async (cartData) => {
   try {
-    const response = await api.post("/add-to-cart", cartData);
+    const response = await api.post("/add-cart", cartData);
     return {
       success: true,
       data: response.data,
@@ -21,9 +21,9 @@ export const addToCart = async (cartData) => {
   }
 };
 
-export const updateCart = async (cartData) => {
+export const updateCart = async (cartId, cartData) => {
   try {
-    const response = await api.post("/update-cart", cartData);
+    const response = await api.post(`/update-cart/${cartId}`, cartData);
     return {
       success: true,
       data: response.data,
@@ -42,9 +42,9 @@ export const updateCart = async (cartData) => {
   }
 };
 
-export const deleteCart = async (cartData) => {
+export const deleteCart = async (cartId) => {
   try {
-    const response = await api.delete("/delete-cart", { data: cartData });
+    const response = await api.delete(`/delete-cart/${cartId}`);
     return {
       success: true,
       data: response.data,

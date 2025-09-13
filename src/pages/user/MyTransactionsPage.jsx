@@ -205,20 +205,23 @@ const MyTransactionsPage = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-lg hover:shadow-xl transition-all duration-200"
+            className="flex items-center text-gray-800 hover:text-blue-700 mb-4 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back
           </button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              My Transactions
-            </h1>
-            <p className="text-gray-600">
-              Track your booking history and status
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                My Transactions
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Track your booking history and status
+              </p>
+            </div>
           </div>
         </div>
 

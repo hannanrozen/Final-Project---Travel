@@ -7,8 +7,6 @@ import {
   Gift,
   Percent,
   ArrowUpDown,
-  Grid3X3,
-  List,
   SlidersHorizontal,
   Star,
   Clock,
@@ -21,7 +19,8 @@ import { getPromos } from "../../api/promo";
 import { useToast } from "../../hooks/useToast";
 import { commonButtons } from "../../utils/buttonStyles";
 import SortDropdown from "../../components/SortDropdown";
-import ViewModeToggle from "../../components/ViewModeToggle";
+// Import fallback image
+import promoImageFallback from "../../assets/images/promo_image.jpg";
 
 const PromoPage = () => {
   const [promos, setPromos] = useState({
@@ -32,12 +31,12 @@ const PromoPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [filteredPromos, setFilteredPromos] = useState([]);
-  const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
-    discountRange: [0, 1000000],
-    minPurchase: [0, 5000000],
+    discountRange: [0, 1_000_000],
+    minPurchase: [0, 5_000_000],
   });
+  const [imageErrors, setImageErrors] = useState(new Set()); // Track failed images
   const { showToast } = useToast();
 
   const sortOptions = [
@@ -66,6 +65,25 @@ const PromoPage = () => {
       icon: Percent,
     },
   ];
+
+  // Handle image load errors
+  const handleImageError = (promoId) => {
+    setImageErrors((prev) => new Set([...prev, promoId]));
+  };
+
+  // Get image source with fallback logic
+  const getPromoImageSrc = (promo) => {
+    if (imageErrors.has(promo.id)) {
+      return promoImageFallback;
+    }
+
+    const promoImage = promo?.imageUrl || promo?.imageUrls?.[0] || promo?.image;
+    if (!promoImage || promoImage === "" || promoImage === "null") {
+      return promoImageFallback;
+    }
+
+    return promoImage;
+  };
 
   // Fetch promos on component mount
   useEffect(() => {
@@ -154,9 +172,9 @@ const PromoPage = () => {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("id-ID", {
       style: "currency",
-      currency: "USD",
+      currency: "IDR",
     }).format(price || 0);
   };
 
@@ -165,7 +183,7 @@ const PromoPage = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-500 to-cyan-600  text-white py-16">
+      <div className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white py-16">
         <div className="container mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Amazing Travel Promos
@@ -177,11 +195,11 @@ const PromoPage = () => {
       </div>
 
       {/* Content Section */}
-      <div className="container mx-auto px-6 py-12">
+      <div className="container mx-auto px-6 py-16  min-h-screen">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters - Desktop */}
           <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-6">
+            <div className="bg-white rounded-xl shadow-md p-6 sticky top-20">
               <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <Filter className="w-5 h-5" />
                 Filters
@@ -201,7 +219,7 @@ const PromoPage = () => {
                     type="range"
                     min="0"
                     max="1000000"
-                    step="50000"
+                    step="10000"
                     value={filters.discountRange[1]}
                     onChange={(e) =>
                       setFilters((prev) => ({
@@ -298,11 +316,6 @@ const PromoPage = () => {
                     value={sortBy}
                     onChange={setSortBy}
                   />
-
-                  <ViewModeToggle
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                  />
                 </div>
               </div>
             </div>
@@ -362,32 +375,64 @@ const PromoPage = () => {
               </div>
             )}
 
-            {/* Promos Grid/List */}
+            {/* Promos Grid */}
             {!promos.loading && !promos.error && filteredPromos.length > 0 && (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-                    : "space-y-6"
-                }
-              >
-                {filteredPromos.map((promo) =>
-                  viewMode === "grid" ? (
-                    <PromoCard
-                      key={promo.id}
-                      promo={promo}
-                      onCopyCode={handleCopyPromoCode}
-                    />
-                  ) : (
-                    <PromoListItem
-                      key={promo.id}
-                      promo={promo}
-                      onCopyCode={handleCopyPromoCode}
-                    />
-                  )
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 py-8">
+                {filteredPromos.map((promo) => (
+                  <PromoCard
+                    key={promo.id}
+                    promo={promo}
+                    onCopyCode={handleCopyPromoCode}
+                    getImageSrc={getPromoImageSrc}
+                    onImageError={handleImageError}
+                  />
+                ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Call to Action Section */}
+        <div className="mt-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl p-12 text-center text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Don't Miss Out on Amazing Deals!
+          </h2>
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Sign up for our newsletter and be the first to know about exclusive
+            travel promos, flash sales, and limited-time offers that could save
+            you hundreds on your next adventure.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              className="flex-1 px-6 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+            />
+            <button className="px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors duration-200 shadow-lg">
+              Subscribe Now
+            </button>
+          </div>
+          <p className="text-sm mt-4 opacity-75">
+            ✈️ No spam, just amazing travel deals delivered to your inbox
+          </p>
+        </div>
+
+        {/* Statistics Section */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center p-8 bg-white rounded-xl shadow-md">
+            <div className="text-4xl font-bold text-blue-600 mb-2">500+</div>
+            <div className="text-gray-600 font-medium">Active Promos</div>
+            <div className="text-sm text-gray-500 mt-1">Updated daily</div>
+          </div>
+          <div className="text-center p-8 bg-white rounded-xl shadow-md">
+            <div className="text-4xl font-bold text-green-600 mb-2">$2M+</div>
+            <div className="text-gray-600 font-medium">Total Savings</div>
+            <div className="text-sm text-gray-500 mt-1">For our customers</div>
+          </div>
+          <div className="text-center p-8 bg-white rounded-xl shadow-md">
+            <div className="text-4xl font-bold text-purple-600 mb-2">50K+</div>
+            <div className="text-gray-600 font-medium">Happy Travelers</div>
+            <div className="text-sm text-gray-500 mt-1">And counting</div>
           </div>
         </div>
       </div>
@@ -397,31 +442,25 @@ const PromoPage = () => {
   );
 };
 
-// Promo Card Component
-const PromoCard = ({ promo, onCopyCode }) => {
+// Promo Card Component with Fallback Image Support
+const PromoCard = ({ promo, onCopyCode, getImageSrc, onImageError }) => {
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("id-ID", {
       style: "currency",
-      currency: "USD",
+      currency: "IDR",
     }).format(price || 0);
   };
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group">
-      {/* Promo Image */}
+      {/* Promo Image with Fallback */}
       <div className="relative h-48 bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center overflow-hidden">
-        {promo.imageUrl ? (
-          <img
-            src={promo.imageUrl}
-            alt={promo.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              e.target.style.display = "none";
-            }}
-          />
-        ) : (
-          <Gift className="w-12 h-12 text-white" />
-        )}
+        <img
+          src={getImageSrc(promo)}
+          alt={promo.title || "Special Promo"}
+          onError={() => onImageError(promo.id)}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
 
         {/* Discount Badge */}
         {promo.promo_discount_price && (
@@ -504,116 +543,6 @@ const PromoCard = ({ promo, onCopyCode }) => {
         >
           Use This Promo
         </button>
-      </div>
-    </div>
-  );
-};
-
-// Promo List Item Component
-const PromoListItem = ({ promo, onCopyCode }) => {
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price || 0);
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group">
-      <div className="flex flex-col md:flex-row">
-        {/* Image Section */}
-        <div className="md:w-80 h-48 md:h-auto bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center overflow-hidden relative">
-          {promo.imageUrl ? (
-            <img
-              src={promo.imageUrl}
-              alt={promo.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
-          ) : (
-            <Gift className="w-12 h-12 text-white" />
-          )}
-
-          {/* Discount Badge */}
-          {promo.promo_discount_price && (
-            <div className="absolute top-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-              Save {formatPrice(promo.promo_discount_price)}
-            </div>
-          )}
-        </div>
-
-        {/* Content Section */}
-        <div className="flex-1 p-6">
-          <div className="flex flex-col lg:flex-row gap-6 h-full">
-            {/* Main Content */}
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
-                {promo.title || "Special Offer"}
-              </h3>
-
-              <p className="text-gray-600 mb-4 leading-relaxed">
-                {promo.description ||
-                  "Amazing travel deal available for a limited time!"}
-              </p>
-
-              <div className="flex flex-wrap gap-4">
-                {promo.promo_discount_price && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-                    <Tag className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-green-700 font-medium">
-                      Save {formatPrice(promo.promo_discount_price)}
-                    </span>
-                  </div>
-                )}
-
-                {promo.minimum_claim_price && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
-                    <ShoppingCart className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm text-blue-700 font-medium">
-                      Min. {formatPrice(promo.minimum_claim_price)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Action Section */}
-            <div className="lg:w-80 flex flex-col justify-between">
-              {/* Promo Code */}
-              {promo.promo_code && (
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 mb-4 border-2 border-dashed border-gray-300">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide font-medium">
-                        Promo Code
-                      </p>
-                      <p className="font-mono font-bold text-lg text-blue-600 tracking-wider">
-                        {promo.promo_code}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => onCopyCode(promo.promo_code)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                      title="Copy promo code"
-                    >
-                      <Copy className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Button */}
-              <button
-                onClick={() => (window.location.href = "/activities")}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white py-3 rounded-lg transition-all duration-200 font-semibold shadow-md hover:shadow-lg"
-              >
-                Use This Promo
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { getActivityById } from "../../api/activity";
-import { addToCart } from "../../api/cart";
+import { useCart } from "../../hooks/useCart";
 import { useToast } from "../../hooks/useToast";
 import { useAuth } from "../../hooks/useAuth";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -34,6 +34,7 @@ const ActivityDetailWithCalendar = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { authenticated } = useAuth();
+  const { addToCart } = useCart();
 
   // Activity data state
   const [activity, setActivity] = useState(null);
@@ -110,31 +111,15 @@ const ActivityDetailWithCalendar = () => {
       return;
     }
 
-    if (!selectedDate) {
-      showToast("Please select a date first", "warning");
-      return;
-    }
-
     try {
       setAddingToCart(true);
 
-      for (let i = 0; i < quantity; i++) {
-        const result = await addToCart({
-          activityId: id,
-          date: selectedDate.toISOString(),
-          quantity: 1,
-        });
-
-        if (!result.success) {
-          showToast(result.error || "Failed to add to cart", "error");
-          return;
-        }
-      }
-
-      showToast(`Added ${quantity} ticket(s) to cart successfully!`, "success");
+      // Add to cart using the useCart hook
+      await addToCart(id);
+      showToast("Activity added to cart!", "success");
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      showToast("Error adding to cart", "error");
+      console.error("Failed to add to cart:", error);
+      showToast(error.message || "Failed to add to cart", "error");
     } finally {
       setAddingToCart(false);
     }

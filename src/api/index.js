@@ -1,4 +1,3 @@
-// API exports
 export * from "./activity.js";
 export * from "./banner.js";
 export * from "./promo.js";

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useContext, useReducer, useCallback } from "react";
 import { addToCart, updateCart, deleteCart, getCarts } from "../api/cart";
 
 const CartContext = createContext();
@@ -58,40 +58,48 @@ export const CartProvider = ({ children }) => {
     error: null,
   });
 
-  const fetchCartItems = async () => {
+  const fetchCartItems = useCallback(async () => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       dispatch({ type: "SET_ERROR", payload: null });
       const response = await getCarts();
+
       if (response.success) {
         // Handle the correct data structure from API
         const cartItems = response.data?.data || response.data || [];
         dispatch({ type: "SET_CART_ITEMS", payload: cartItems });
       } else {
-        console.error("Failed to fetch cart items:", response.error);
-        dispatch({
-          type: "SET_ERROR",
-          payload: response.error || "Failed to fetch cart items",
-        });
-        dispatch({ type: "SET_CART_ITEMS", payload: [] });
+        // If 404 (no carts), treat as empty cart instead of error
+        if (response.status === 404) {
+          dispatch({ type: "SET_CART_ITEMS", payload: [] });
+        } else {
+          console.error("Failed to fetch cart items:", response.error);
+          dispatch({
+            type: "SET_ERROR",
+            payload: response.error || "Failed to fetch cart items",
+          });
+        }
       }
     } catch (error) {
       console.error("Failed to fetch cart items:", error);
-      dispatch({
-        type: "SET_ERROR",
-        payload: error.message || "Failed to fetch cart items",
-      });
-      dispatch({ type: "SET_CART_ITEMS", payload: [] });
+      // If 404 (no carts), treat as empty cart instead of error
+      if (error.response?.status === 404) {
+        dispatch({ type: "SET_CART_ITEMS", payload: [] });
+      } else {
+        dispatch({
+          type: "SET_ERROR",
+          payload: error.message || "Failed to fetch cart items",
+        });
+      }
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  };
+  }, []);
 
   const addToCartItem = async (activityId) => {
     try {
       const response = await addToCart({ activityId });
       if (response.success) {
-        dispatch({ type: "ADD_ITEM", payload: response.data });
         // Refresh cart items to get updated data
         await fetchCartItems();
         return response;
@@ -104,11 +112,16 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateCartItem = async (cartId, quantity) => {
+  const updateCartItem = async (cartId, cartData) => {
     try {
-      const response = await updateCart(cartId, quantity);
-      dispatch({ type: "UPDATE_ITEM", payload: response.data });
-      return response;
+      const response = await updateCart(cartId, cartData);
+      if (response.success) {
+        // Refresh cart items to get updated data
+        await fetchCartItems();
+        return response;
+      } else {
+        throw new Error(response.error || "Failed to update cart");
+      }
     } catch (error) {
       console.error("Failed to update cart:", error);
       throw error;
@@ -117,8 +130,15 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (cartId) => {
     try {
-      await deleteCart(cartId);
-      dispatch({ type: "REMOVE_ITEM", payload: cartId });
+      const response = await deleteCart(cartId);
+      if (response.success) {
+        dispatch({ type: "REMOVE_ITEM", payload: cartId });
+        // Also refresh to get updated data
+        await fetchCartItems();
+        return response;
+      } else {
+        throw new Error(response.error || "Failed to remove from cart");
+      }
     } catch (error) {
       console.error("Failed to remove from cart:", error);
       throw error;
@@ -155,9 +175,7 @@ export const CartProvider = ({ children }) => {
     return state.items.reduce((count, item) => count + item.quantity, 0);
   };
 
-  useEffect(() => {
-    fetchCartItems();
-  }, []);
+  // Removed automatic fetch on mount - let components control when to fetch
 
   return (
     <CartContext.Provider

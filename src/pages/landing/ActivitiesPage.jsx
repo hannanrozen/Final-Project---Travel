@@ -241,15 +241,15 @@ export default function ActivitiesPage() {
           <aside
             className={`lg:w-64 ${showFilters ? "block" : "hidden lg:block"}`}
           >
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-20">
+              <h3 className="flex items-center gap-2text-lg font-semibold text-gray-900 mb-6">
+                <Filter className="w-5 h-5" />
                 Filters
               </h3>
 
               {/* Categories */}
               <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-blue-600" />
+                <h4 className="text-sm font-semibold text-gray-900 mb-4 ">
                   Categories
                 </h4>
                 <div className="space-y-2">
@@ -298,18 +298,18 @@ export default function ActivitiesPage() {
                     <input
                       type="range"
                       min="0"
-                      max="10000000"
-                      step="100000"
-                      value={priceRange[1]}
+                      max="1000"
+                      step="100"
+                      value={priceRange[0]}
                       onChange={(e) =>
-                        setPriceRange([priceRange[0], parseInt(e.target.value)])
+                        setPriceRange([parseInt(e.target.value), priceRange[1]])
                       }
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                       style={{
                         background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                          (priceRange[1] / 10000000) * 100
+                          (priceRange[1] / 1000) * 100
                         }%, #e5e7eb ${
-                          (priceRange[1] / 10000000) * 100
+                          (priceRange[1] / 1000) * 100
                         }%, #e5e7eb 100%)`,
                       }}
                     />

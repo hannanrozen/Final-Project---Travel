@@ -7,12 +7,13 @@ import LoginIndex from "./pages/auth/LoginIndex";
 import RegisterIndex from "./pages/auth/RegisterIndex";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
-import SimpleCartPage from "./pages/user/SimpleCartPage";
-import CheckoutPage from "./pages/user/CheckoutPage";
+import Cart from "./pages/user/CartPage";
+// import CheckoutPage from "./pages/user/CheckoutPage";
 import TransactionPage from "./pages/user/TransactionPage";
 import TransactionHistory from "./pages/user/MyTransactionsPage";
 import ProfilePage from "./pages/user/ProfilePage";
 import BookNowPage from "./pages/user/BookNowPage";
+import TransactionConfirmation from "./pages/user/TransactionConfirmation";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AuthRedirect from "./components/AuthRedirect";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
@@ -78,21 +79,29 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/cart",
+    path: "/transaction/confirmation/:id",
     element: (
       <ProtectedRoute>
-        <SimpleCartPage />
+        <TransactionConfirmation />
       </ProtectedRoute>
     ),
   },
   {
-    path: "/checkout",
+    path: "/cart",
     element: (
       <ProtectedRoute>
-        <CheckoutPage />
+        <Cart />
       </ProtectedRoute>
     ),
   },
+  // {
+  //   path: "/checkout",
+  //   element: (
+  //     <ProtectedRoute>
+  //       <CheckoutPage />
+  //     </ProtectedRoute>
+  //   ),
+  // },
   {
     path: "/transaction",
     element: (
@@ -183,12 +192,4 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-  // {
-  //   path: "/admin/users",
-  //   element: (
-  //     <ProtectedRoute requireAdmin={true}>
-  //       <AdminUsersPage />
-  //     </ProtectedRoute>
-  //   ),
-  // },
 ]);
