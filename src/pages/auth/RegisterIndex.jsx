@@ -12,7 +12,6 @@ import {
   Shield,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { uploadImage } from "../../api/upload";
 import Logo from "../../assets/icons/Logonavbar.svg";
 import authImage from "../../assets/images/authbg.jpg";
 import { commonButtons } from "../../utils/buttonStyles";
@@ -30,8 +29,6 @@ const RegisterIndex = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRepeat, setShowPasswordRepeat] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,13 +48,6 @@ const RegisterIndex = () => {
     setIsSubmitting(true);
 
     try {
-      if (profileImage) {
-        setUploadingImage(true);
-        const uploadResponse = await uploadImage(profileImage);
-        formData.profilePictureUrl = uploadResponse.url;
-        setUploadingImage(false);
-      }
-
       const result = await register(formData);
       if (result.success) {
         alert("Registration successful! Please login with your credentials.");
@@ -83,18 +73,6 @@ const RegisterIndex = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfileImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   return (
@@ -144,36 +122,6 @@ const RegisterIndex = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Profile Picture Upload */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Profile Picture (Optional)
-                </label>
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full overflow-hidden flex items-center justify-center">
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-8 h-8 text-slate-400" />
-                    )}
-                  </div>
-                  <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 transition-colors">
-                    <Upload className="w-4 h-4 inline mr-2" />
-                    Choose Image
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </div>
-
               {/* Name Field */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
